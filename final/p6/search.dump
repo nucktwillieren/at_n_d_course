@@ -1,0 +1,27 @@
+[12:42:53] 301 -  314B  - /js  ->  http://ctf.adl.tw:12005/js/
+[12:42:54] 403 -  278B  - /.ht_wsr.txt
+[12:42:54] 403 -  278B  - /.htaccess.bak1
+[12:42:54] 403 -  278B  - /.htaccess.orig
+[12:42:54] 403 -  278B  - /.htaccess.sample
+[12:42:54] 403 -  278B  - /.htaccess.save
+[12:42:54] 403 -  278B  - /.htaccessBAK
+[12:42:54] 403 -  278B  - /.htaccessOLD
+[12:42:54] 403 -  278B  - /.htaccessOLD2
+[12:42:54] 403 -  278B  - /.htaccess_extra
+[12:42:54] 403 -  278B  - /.htaccess_orig
+[12:42:54] 403 -  278B  - /.htaccess_sc
+[12:42:54] 403 -  278B  - /.htm
+[12:42:54] 403 -  278B  - /.html
+[12:42:54] 403 -  278B  - /.htpasswds
+[12:42:54] 403 -  278B  - /.htpasswd_test
+[12:42:54] 403 -  278B  - /.httr-oauth
+[12:43:01] 200 -   46B  - /api.php
+[12:43:02] 200 -    0B  - /config.php
+[12:43:03] 301 -  315B  - /css  ->  http://ctf.adl.tw:12005/css/
+[12:43:04] 200 -  105KB - /favicon.ico
+[12:43:04] 301 -  315B  - /img  ->  http://ctf.adl.tw:12005/img/
+[12:43:05] 200 -  717B  - /index.php
+[12:43:05] 200 -  717B  - /index.php/login/
+[12:43:05] 403 -  278B  - /js/
+[12:43:08] 403 -  278B  - /server-status
+[12:43:08] 403 -  278B  - /server-status/

